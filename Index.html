@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music App</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: 'Segoe UI', cursive;
+}
+
+body{
+  background:#0d0d0d;
+  color:#fff;
+  overflow:hidden;
+}
+
+/* -------- SONG LIST SCREEN -------- */
+#listScreen{
+  height:100vh;
+  overflow-y:auto;
+  padding:15px;
+}
+
+.song-card{
+  background:#141414;
+  border:1px solid #222;
+  padding:15px;
+  border-radius:14px;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.song-card:hover{
+  background:#1c1c1c;
+}
+
+.song-card img{
+  width:55px;
+  height:55px;
+  border-radius:10px;
+  object-fit:cover;
+}
+
+.song-info h4{
+  font-size:16px;
+}
+
+.song-info p{
+  font-size:12px;
+  opacity:0.7;
+}
+
+/* -------- PLAYER SCREEN -------- */
+#playerScreen{
+  position:fixed;
+  top:0;
+  left:100%;
+  width:100%;
+  height:100%;
+  background:#0d0d0d;
+  transition:0.4s ease;
+  padding:15px;
+}
+
+#playerScreen.active{
+  left:0;
+}
+
+/* Top bar */
+.top-bar{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.back-btn{
+  font-size:22px;
+  cursor:pointer;
+}
+
+/* Album image */
+.album-box{
+  margin-top:25px;
+  display:flex;
+  justify-content:center;
+}
+
+.album-box img{
+  width:260px;
+  height:260px;
+  border-radius:20px;
+  object-fit:cover;
+  box-shadow:0 15px 40px rgba(0,0,0,0.7);
+}
+
+/* Song title */
+.player-info{
+  text-align:center;
+  margin-top:18px;
+}
+
+.player-info h3{
+  font-size:20px;
+}
+
+.player-info p{
+  font-size:13px;
+  opacity:0.7;
+}
+
+/* Controls */
+.controls{
+  margin-top:25px;
+  display:flex;
+  justify-content:center;
+  gap:25px;
+  font-size:26px;
+}
+
+.controls span{
+  cursor:pointer;
+}
+
+/* Progress */
+.progress{
+  margin-top:25px;
+}
+
+.progress input{
+  width:100%;
+}
+
+/* Bottom buttons */
+.bottom-btns{
+  margin-top:25px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.bottom-btns a{
+  text-decoration:none;
+  color:#fff;
+  border:1px solid #333;
+  padding:10px 18px;
+  border-radius:30px;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SONG LIST -->
+<div id="listScreen"></div>
+
+<!-- PLAYER SCREEN -->
+<div id="playerScreen">
+  <div class="top-bar">
+    <span class="back-btn" onclick="goBack()">←</span>
+    <span>Now Playing</span>
+  </div>
+
+  <div class="album-box">
+    <img id="albumImg" src="music.jpg">
+  </div>
+
+  <div class="player-info">
+    <h3 id="songTitle">Song</h3>
+    <p id="songArtist">Artist</p>
+  </div>
+
+  <div class="controls">
+    <span onclick="prevSong()">⏮</span>
+    <span onclick="togglePlay()">⏯</span>
+    <span onclick="nextSong()">⏭</span>
+  </div>
+
+  <div class="progress">
+    <input type="range" id="seekBar" value="0">
+  </div>
+
+  <div class="bottom-btns">
+    <a id="downloadBtn" download>⬇ Download</a>
+    <a onclick="goBack()">⬅ Back</a>
+  </div>
+</div>
+
+<audio id="audio"></audio>
+
+<script>
+const songs = [
+  {title:"Night Drive", artist:"Unknown", file:"songs/song1.mp3"},
+  {title:"Lofi Rain", artist:"Unknown", file:"songs/song2.mp3"},
+  {title:"Sad Mood", artist:"Unknown", file:"songs/song3.mp3"},
+  {title:"Chill Beats", artist:"Unknown", file:"songs/song4.mp3"}
+];
+
+const listScreen = document.getElementById("listScreen");
+const playerScreen = document.getElementById("playerScreen");
+const audio = document.getElementById("audio");
+const titleEl = document.getElementById("songTitle");
+const artistEl = document.getElementById("songArtist");
+const seekBar = document.getElementById("seekBar");
+const downloadBtn = document.getElementById("downloadBtn");
+
+let currentIndex = 0;
+
+/* Render song list */
+songs.forEach((s, i)=>{
+  const div = document.createElement("div");
+  div.className = "song-card";
+  div.innerHTML = `
+    <img src="music.jpg">
+    <div class="song-info">
+      <h4>${s.title}</h4>
+      <p>${s.artist}</p>
+    </div>
+  `;
+  div.onclick = ()=>openPlayer(i);
+  listScreen.appendChild(div);
+});
+
+/* Open player */
+function openPlayer(i){
+  currentIndex = i;
+  loadSong();
+  playerScreen.classList.add("active");
+  audio.play();
+}
+
+/* Back */
+function goBack(){
+  playerScreen.classList.remove("active");
+}
+
+/* Load song */
+function loadSong(){
+  const s = songs[currentIndex];
+  audio.src = s.file;
+  titleEl.innerText = s.title;
+  artistEl.innerText = s.artist;
+  downloadBtn.href = s.file;
+}
+
+/* Play pause */
+function togglePlay(){
+  if(audio.paused) audio.play();
+  else audio.pause();
+}
+
+/* Next / Prev */
+function nextSong(){
+  currentIndex = (currentIndex+1)%songs.length;
+  loadSong();
+  audio.play();
+}
+function prevSong(){
+  currentIndex = (currentIndex-1+songs.length)%songs.length;
+  loadSong();
+  audio.play();
+}
+
+/* Seek bar */
+audio.ontimeupdate = ()=>{
+  seekBar.max = audio.duration || 0;
+  seekBar.value = audio.currentTime;
+};
+seekBar.oninput = ()=>{
+  audio.currentTime = seekBar.value;
+};
+
+/* Auto next */
+audio.addEventListener("ended", nextSong);
+</script>
+
+</body>
+  </html>
